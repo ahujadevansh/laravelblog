@@ -3,13 +3,11 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Providers\RouteServiceProvider;
 use App\User;
-use App\Admin;
-use App\Writer; 
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Http\Request;
 
 class RegisterController extends Controller
 {
@@ -31,7 +29,7 @@ class RegisterController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = '/home';
+    protected $redirectTo = RouteServiceProvider::HOME;
 
     /**
      * Create a new controller instance.
@@ -41,8 +39,6 @@ class RegisterController extends Controller
     public function __construct()
     {
         $this->middleware('guest');
-        $this->middleware('guest:admin');
-        $this->middleware('guest:writer');
     }
 
     /**
@@ -54,8 +50,7 @@ class RegisterController extends Controller
     protected function validator(array $data)
     {
         return Validator::make($data, [
-            'first_name' => ['required', 'string', 'max:255'],
-            'last_name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
@@ -70,82 +65,9 @@ class RegisterController extends Controller
     protected function create(array $data)
     {
         return User::create([
-            'first_name' => $data['first_name'],
-            'last_name' => $data['last_name'],
+            'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
         ]);
     }
-
-    protected function createAdmin(Request $request)
-    {
-        $this->validator($request->all())->validate();
-        $admin = Admin::create([
-            'first_name' => $request['first_name'],
-            'last_name' => $request['last_name'],
-            'email' => $request['email'],
-            'password' => Hash::make($request['password']),
-        ]);
-        return redirect()->intended('login/admin');
-    }
-
-    protected function createWriter(Request $request)
-    {
-        $this->validator($request->all())->validate();
-        $writer = Writer::create([
-            'first_name' => $request['first_name'],
-            'last_name' => $request['last_name'],
-            'email' => $request['email'],
-            'password' => Hash::make($request['password']),
-        ]);
-        return redirect()->intended('login/writer');
-    }
-
-    public function showAdminRegisterForm()
-    {
-        return view('auth.register', ['url' => 'admin']);
-    }
-
-    public function showWriterRegisterForm()
-    {
-        return view('auth.register', ['url' => 'writer']);
-    }
 }
-
-// protected function validator(array $data)
-//     {
-//         return Validator::make($data, [
-//             'first_name' => ['required', 'string', 'max:255'],
-//             'last_name' => ['required', 'string', 'max:255'],
-//             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-//             'gender' => ['required', 'string', 'max:10'],
-//             'date_of_birth' => ['required', 'date', 'before' . date("Y-m-d")],
-//             'address' => ['required'],
-//             'phone' => ['required', 'string', 'max:15'],
-//             'profile_image' => ['image', 'nullable', 'max:1999'],
-//             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            
-//         ]);
-//     }
-
-//     /**
-//      * Create a new user instance after a valid registration.
-//      *
-//      * @param  array  $data
-//      * @return \App\User
-//      */
-//     protected function create(array $data)
-//     {
-//         return User::create([
-//             'first_name' => $data['first_name'],
-//             'last_name' => $data['last_name'],
-//             'email' => $data['email'],
-//             'gender' => $data['gender'],
-//             'date_of_birth' => $data['date_of_birth'],
-//             'address' => $data['address'],
-//             'phone' => $data['phone'],
-//             'profile_image' => $data['profile_image'],
-//             'password' => Hash::make($data['password']),
-//         ]);
-//     }
-// }

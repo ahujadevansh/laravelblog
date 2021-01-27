@@ -1,5 +1,8 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -10,26 +13,28 @@
 | contains the "web" middleware group. Now create something great!
 |
 */
-/*
-Route::get('/', function () {
-    return view('welcome');
-});
-*/
-Route::get('/', 'PagesController@index')->name('pages.index');
-Route::get('/about', 'PagesController@about')->name('pages.about');
+
+Route::get('/', 'WelcomeController@index')->name('welcome');
+Route::get('/blog/{post}/', 'WelcomeController@show')->name('blog.show');
+Route::get('/blog/category/{category}/', 'WelcomeController@category')->name('blog.category');
+Route::get('/blog/tag/{tag}/', 'WelcomeController@tag')->name('blog.tag');
+
 Auth::routes();
 
-Route::get('/login/admin', 'Auth\LoginController@showAdminLoginForm');
-Route::get('/login/writer', 'Auth\LoginController@showWriterLoginForm');
-Route::get('/register/admin', 'Auth\RegisterController@showAdminRegisterForm');
-Route::get('/register/writer', 'Auth\RegisterController@showWriterRegisterForm');
+Route::middleware(['auth'])->group(function(){
 
-Route::post('/login/admin', 'Auth\LoginController@adminLogin');
-Route::post('/login/writer', 'Auth\LoginController@writerLogin');
-Route::post('/register/admin', 'Auth\RegisterController@createAdmin');
-Route::post('/register/writer', 'Auth\RegisterController@createWriter');
+    Route::get('/home', 'HomeController@index')->name('home');
+    Route::resource('categories', 'CategoriesController');
+    Route::resource('tags', 'TagsController');
 
-Route::view('/home', 'home')->middleware('auth');
-Route::view('/admin', 'admin');
-Route::view('/writer', 'writer');
-// Route::get('/home', 'HomeController@index')->name('home');
+    Route::delete('/posts/trash/{post}','PostsController@trash')->name('posts.trash');
+    Route::put('/posts/restore/{id}','PostsController@restore')->name('posts.restore');
+    Route::get('/posts/trashed','PostsController@trashed')->name('posts.trashed');
+    Route::resource('posts', 'PostsController');
+});
+
+Route::middleware(['auth', 'admin'])->group(function(){
+
+    Route::get('/users', 'UsersController@index')->name('users.index');
+    Route::put('/users/{user}/make-admin', 'UsersController@makeAdmin')->name('users.make-admin');
+});
